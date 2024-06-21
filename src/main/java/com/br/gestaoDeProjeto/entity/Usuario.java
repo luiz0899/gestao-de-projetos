@@ -32,6 +32,7 @@ public class Usuario implements UserDetails {
 	private String senha;
 	
 	public Usuario(Long id, String nome, String email, String senha) {
+		super();
 		this.id = id ;
 		this.nome = nome;
 		this.email = email;
@@ -83,6 +84,8 @@ public class Usuario implements UserDetails {
 	public boolean isEnabled() {
 		return true ;
 	}
+
+
     
 	
     
