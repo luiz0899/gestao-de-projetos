@@ -38,19 +38,22 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 			//pego o id que esta dentro do token.
 			Optional<Long> id = jwtService.obterIdDoUsu(token);
 			
-			if (!id.isPresent()) {
-				throw new InputMismatchException("Token Invalido");
+			if (id.isPresent()) {
+				
+				// pego o usuario do dono pelo seu id.
+				UserDetails usuario = customUserDetailsService.obterUsuarioPorId(id.get());
+				//Aqui verificamos as autenticações do usuario e as permissões.
+				UsernamePasswordAuthenticationToken authentication = 
+						new UsernamePasswordAuthenticationToken(usuario, null, Collections.emptyList());
+				//Mudando a autenticação para a propria requisição.
+				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				//repasso a autenticação para o contexto e o a partir de agora o spring toma conta do resto.
+				SecurityContextHolder.getContext().setAuthentication(authentication);
 			}
 			
-			// pego o usuario do dono pelo seu id.
-			UserDetails usuario = customUserDetailsService.obterUsuarioPorId(id.get());
-			//Aqui verificamos as autenticações do usuario e as permissões.
-			UsernamePasswordAuthenticationToken authentication = 
-					new UsernamePasswordAuthenticationToken(usuario, null, Collections.emptyList());
-			//Mudando a autenticação para a propria requisição.
-			authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-			//repasso a autenticação para o contexto e o a partir de agora o spring toma conta do resto.
-			SecurityContextHolder.getContext().setAuthentication(authentication);
+			//metodo padrão para filtar as regras do usuario.
+			filterChain.doFilter(request, response) ;
+			
 	}
 		
 	private String obterToken(HttpServletRequest request) {
